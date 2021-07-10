@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+
+    "target": "es5",                             
+    "module": "commonjs",                        
+    "strict": true,                              
+    "strictPropertyInitialization": false,     
+    "allowJs": true,
+    "baseUrl": "./src",                          
+    "rootDir": "./src",                           
+    "esModuleInterop": true,                     
+    "experimentalDecorators": true,           
+    "emitDecoratorMetadata": true,                    
+    "forceConsistentCasingInFileNames": true,  
+    "typeRoots": [
+      "./src/@types",
+      "./custom_typings",
+      "./@types",
+      "./node_modules/@types"
+    ]   
+  }
+}
