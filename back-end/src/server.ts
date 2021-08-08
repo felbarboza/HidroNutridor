@@ -7,6 +7,9 @@ import cors from 'cors';
 import './infra/typeorm';
 import AppError from 'errors/AppError';
 import SaveSensorDataService from 'services/SaveSensorDataService';
+import ManageActivationTimeService from 'services/ManageActivationTimeService';
+import CalibratePhService from 'services/CalibratePhService';
+import CalibrateConductivityService from 'services/CalibrateConductivityService';
 
 const app = expressWs(express()).app
 app.use(cors());
@@ -30,12 +33,24 @@ app.use((err: Error, request: Request, response: Response, _: NextFunction) => {
 	});
 });
 
+const saveSensorData = new SaveSensorDataService()
+const activatePump = new ManageActivationTimeService()
+const calibratePh = CalibratePhService.getInstance()
+const calibrateConductivity = CalibrateConductivityService.getInstance()
+
 app.ws('/', (ws, req)=>{
     ws.on('message', msg => {
-      const data = JSON.parse(msg.toString())
-      console.log(data)
-      const saveSensorData = new SaveSensorDataService()
-      saveSensorData.execute(data)
+			try{
+				const data = JSON.parse(msg.toString())
+				console.log(data)
+				saveSensorData.execute(data)
+				activatePump.execute(ws)
+				calibratePh.verifyPhCalibration(ws)
+				calibrateConductivity.verifyECCalibration(ws)
+				}
+			catch{
+				console.log(msg)
+			}
     })
 
   ws.on('close', () => {

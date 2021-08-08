@@ -8,11 +8,11 @@ export default class SensorsController {
 		request: Request,
 		response: Response,
 	): Promise<Response> {
-    const {estufa_id} = request.query
+    	const {estufa_id, number_of_readings} = request.query
     
 		const listSensorData = new ListSensorDataService;
 
-		const sensorData = await listSensorData.execute(Number(estufa_id));
+		const sensorData = await listSensorData.execute(Number(estufa_id), Number(number_of_readings));
 
 		return response.json({ sensorData });
 	}

@@ -3,18 +3,26 @@ import { getRepository } from 'typeorm';
 import AppError from '../errors/AppError';
 
 interface SensorDataDTO{
-  estufa_id: number;
-  temperature: number;
-  conductivity: number;
+  id_estufa: number;
+  type: string;
+  temp: number;
+  ec: number;
   ph: number;
+  adc_ph: number;
+  adc_ec: number;
 }
 
 class SaveSensorDataService {
-	public async execute({ estufa_id, temperature, conductivity, ph }: SensorDataDTO): Promise<void> {
+	public async execute({ id_estufa, type,  temp, ec, ph, adc_ph, adc_ec }: SensorDataDTO): Promise<void> {
     const sensorDataRepository = getRepository(SensorData)
 
     const sensorData = sensorDataRepository.create({
-      temperature, conductivity, ph, greenhouse_id: estufa_id
+      temperature: temp, 
+      conductivity: ec, 
+      ph, 
+      greenhouse_id: id_estufa,
+      adc_ph,
+      adc_ec
     });
 
     sensorDataRepository.save(sensorData)

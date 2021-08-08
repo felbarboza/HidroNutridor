@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import DeleteGreenHouseService from 'services/DeleteGreenHouse';
 import CreateGreenHouseService from '../services/CreateGreenHouseService';
 import ListGreenHousesService from '../services/ListGreenHousesService';
 
@@ -25,5 +26,18 @@ export default class SessionsController {
 		const greenHouses = await listGreenHouses.execute();
 
 		return response.json({ greenHouses });
+	}
+
+	public async delete(
+		request: Request,
+		response: Response,
+	): Promise<Response> {
+		const { estufa_id } = request.query;
+
+		const createGreenHouse = new DeleteGreenHouseService;
+
+		await createGreenHouse.execute(Number(estufa_id));
+
+		return response.json();
 	}
 }
