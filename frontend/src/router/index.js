@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Home from '../views/Home.vue'
-
+import index from '../store/index.js'
 Vue.use(VueRouter)
 
 const routes = [
@@ -50,7 +50,9 @@ const router = new VueRouter({
 
 router.beforeEach((to, from, next) => {
   const loggedIn = localStorage.getItem('user')
-
+  if(index.state.activeTimers) {
+    index.state.activeTimers.forEach( e=> clearInterval(e));
+  }
   if (to.matched.some( record => record.meta.requiresAuth) && !loggedIn) {
       next('/')
     } 

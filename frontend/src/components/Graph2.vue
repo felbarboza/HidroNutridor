@@ -30,7 +30,7 @@
         </v-card-text>
 
         <v-card-text class="text-center">
-        <div class="display-1">{{ this.title }}</div>
+        <div class="display-1 white--text">{{ this.title }}</div>
         </v-card-text>
   </v-card>
   
@@ -86,6 +86,10 @@ export default {
         title: {
         type: String
         },
+        range: {
+        type: Number,
+        required: true,
+        }
     },
     created(){
         this.setReadingUnit();

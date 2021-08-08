@@ -46,6 +46,7 @@
 
 <script>
 import CalibrationDialog from '../components/CalibrationDialog.vue'
+import APICalls from '../services/APICalls.js'
 export default {
     components: {CalibrationDialog},
     props: {
@@ -79,8 +80,8 @@ export default {
     },
     methods: {
         editValue() {
-            this.dialog = true;
-            this.isEditing = true;
+            this.dialog = !this.dialog;
+            this.isEditing = !this.isEditing;
             if(this.calibrationType === 'acidPH'){
                 console.log(`Editing ${this.calibrationType} offset value: ${this.offset}`)
             }
@@ -94,14 +95,44 @@ export default {
         saveValue() {
             this.isEditing = false;
             this.formValidity = false;
+            //this.$emit('proceed',true);
             if(this.calibrationType === 'acidPh'){
-                console.log(`Saving ${this.calibrationType} offset value: ${this.offset}`)
+                console.log(`Saving ${this.calibrationType} offset value: ${this.offset}`)       
+                this.$emit('loading',true);
+                APICalls.setLowPHCalibration(this.$store.state.currentGreenhouse, this.offset, this.$store.state.user.token)
+                .then( response => {
+                    console.log(response)
+                    this.$store.state.acidicPH = this.offset;
+                    this.$emit('proceed',true);
+                })
+                .catch(error => {
+                    console.log(error)
+                })
             }
             if(this.calibrationType === 'basicPh'){
                 console.log(`Saving ${this.calibrationType} offset value: ${this.offset}`)
+                this.$emit('loading',true);
+                APICalls.setHighPHCalibration(this.$store.state.currentGreenhouse, this.offset, this.$store.state.user.token)
+                .then( response => {
+                    console.log(response)
+                    this.$store.state.basicPH = this.offset;
+                    this.$emit('proceed',true);
+                })
+                .catch(error => {
+                    console.log(error)
+                })
             }   
             if(this.calibrationType === 'conductivity'){
                 console.log(`Saving ${this.calibrationType} offset value: ${this.offset}`)
+                this.$emit('loading',true);
+                APICalls.setConductivityCalibration(this.$store.state.currentGreenhouse, this.offset, this.$store.state.user.token)
+                .then( response => {
+                    this.$store.state.conductivity = this.offset;
+                    console.log(response)
+                })
+                .catch(error => {
+                    console.log(error)
+                })
             }        
         }
     }

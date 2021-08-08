@@ -9,6 +9,11 @@ export default new Vuex.Store({
     user: null,
     token: '',
     currentGreenhouse: null,
+    acidicPH: null,
+    basicdPH: null,
+    conductivity: null,
+    activeTimers: []
+
   },
   mutations: {
     SET_USER_DATA (state, userData) {

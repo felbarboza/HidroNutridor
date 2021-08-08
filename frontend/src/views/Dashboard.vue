@@ -14,13 +14,13 @@
         <Graph :readings="readings" readingType="conductivity" color="green" title="Condutividade" :key='refresh'/> 
       </v-col> -->
       <v-col>
-        <Graph2 :readings="readings" readingType="ph" color="cyan" title="pH"/> 
+        <Graph2 :readings="readings" readingType="ph" color="cyan" title="pH" :range="range"/> 
       </v-col>
       <v-col>
-        <Graph2 :readings="readings" readingType="temperature" color="teal" title="Temperatura"/> 
+        <Graph2 :readings="readings" readingType="temperature" color="teal" title="Temperatura" :range="range"/> 
       </v-col>
       <v-col>
-        <Graph2 :readings="readings" readingType="conductivity" color="green" title="Condutividade"/> 
+        <Graph2 :readings="readings" readingType="conductivity" color="green" title="Condutividade" :range="range"/> 
       </v-col>
     </v-row>
     <v-row>
@@ -72,6 +72,47 @@
             </v-card>
           </v-dialog>
         </v-row>
+      </v-col>
+    </v-row> 
+    <v-row>
+      <v-col>
+        <v-data-table
+          dense
+          :headers="headers"
+          :items="readings"
+          :items-per-page="5"
+          class="elevation-1"
+          @click:row="selectRow"
+          :key='refresh'
+        >
+        <template v-slot:top>
+            <v-toolbar
+              flat
+            >
+              <v-toolbar-title>Leituras</v-toolbar-title>
+              <v-spacer></v-spacer>
+              <v-row>
+                <v-col>
+                  <v-switch
+                    v-model="autoUpdate"
+                    :label="`Habilitar Atualização Automática`"
+                  ></v-switch>
+                </v-col>
+                <v-text-field
+                  class="shrink" 
+                  label="Taxa de atualização (s)" 
+                  type="number" 
+                  v-model="updateRate" 
+                  :rules="numberRules"
+                  >
+                </v-text-field>
+              </v-row>
+            </v-toolbar>
+         </template>
+        <template v-slot:[`item.created_at`]='{ item }'>
+           {{formatDate(item.created_at)}}
+        </template>
+        </v-data-table>
       </v-col>
     </v-row>
     <v-row>
@@ -145,46 +186,6 @@
         </v-data-table>
       </v-col>
     </v-row>
-    <v-row>
-      <v-col>
-        <v-data-table
-          dense
-          :headers="headers"
-          :items="readings"
-          :items-per-page="5"
-          class="elevation-1"
-          @click:row="selectRow"
-        >
-        <template v-slot:top>
-            <v-toolbar
-              flat
-            >
-              <v-toolbar-title>Leituras</v-toolbar-title>
-              <v-spacer></v-spacer>
-              <v-row>
-                <v-col>
-                  <v-switch
-                    v-model="autoUpdate"
-                    :label="`Habilitar Atualização Automática`"
-                  ></v-switch>
-                </v-col>
-                <v-text-field
-                  class="shrink" 
-                  label="Taxa de atualização (s)" 
-                  type="number" 
-                  v-model="updateRate" 
-                  :rules="numberRules"
-                  >
-                </v-text-field>
-              </v-row>
-            </v-toolbar>
-         </template>
-        <template v-slot:[`item.created_at`]='{ item }'>
-           {{formatDate(item.created_at)}}
-        </template>
-        </v-data-table>
-      </v-col>
-    </v-row>
     <v-snackbar
       v-model="snackbar"
     >
@@ -225,6 +226,7 @@ import Graph2 from '../components/Graph2.vue'
         readings: [],
         refresh: 0,
         currentItem: '',
+        range: 10,
         snackbar: false,
         headers: [
             //{text: 'Id', value: 'id'},
@@ -261,7 +263,7 @@ import Graph2 from '../components/Graph2.vue'
         if(value) {
           this.startAutoUpdate();
         } else {
-          clearInterval(this.timerId);
+          this.$store.state.activeTimers.forEach(e => clearInterval(e));
         }
       }
     },
@@ -283,6 +285,7 @@ import Graph2 from '../components/Graph2.vue'
           APICalls.getGreenHouse(this.$store.state.user.token)
           .then( response => {
             this.greenHouses = response.data.greenHouses
+            this.refresh+=1;
           })
           .catch(error => {
             console.log(error)
@@ -310,6 +313,12 @@ import Graph2 from '../components/Graph2.vue'
           //TODO: insert delete method here
           console.log(`deleting ${this.editedItem}`);
           console.log(this.editedItem);
+          APICalls.deleteGreenhouse(this.editedItem.id,this.$store.state.user.token)
+          .then(response =>{
+            console.log('deleted')
+            console.log(response)})
+          .catch(error => 
+            console.log(error));
         },
         updateData() {
           this.$store.dispatch('setCurrentGreenhouse', this.select.id);
@@ -321,11 +330,11 @@ import Graph2 from '../components/Graph2.vue'
         },
         startAutoUpdate() {
           this.timerId = setInterval(() => {
-            APICalls.getSensorData(this.select.id,this.$store.state.user.token)
+            APICalls.getSensorData(this.select.id,1,this.$store.state.user.token)
           .then( response => {
             // this.readings = response.data.sensorData
-            // this.readings.push(...response.data.sensorData)
-            this.randomReadings();
+            this.readings.push(response.data.sensorData[0])
+            //this.randomReadings();
             console.log(response)
             console.log(this.readings)
             console.log(this.readings.length)
@@ -333,11 +342,12 @@ import Graph2 from '../components/Graph2.vue'
           .catch(error => {
             console.log(error)
           });
-          this.refresh+=1;
+          //this.refresh+=1;
           },(parseInt(this.updateRate) >=1 ? parseInt(this.updateRate) : 10)*1000)
+          this.$store.state.activeTimers.push(this.timerId);
         },
         getSensorData() {
-            APICalls.getSensorData(this.select.id,this.$store.state.user.token)
+            APICalls.getSensorData(this.select.id,100,this.$store.state.user.token)
           .then( response => {
             this.readings = response.data.sensorData
             console.log(this.readings)
@@ -345,6 +355,16 @@ import Graph2 from '../components/Graph2.vue'
           .catch(error => {
             console.log(error)
           });
+        },
+        getLiveSensorData() {
+            APICalls.getSensorData(this.$store.state.currentGreenhouse,1,this.$store.state.user.token)
+            .then( response => {
+                this.readings.push(response.data.sensorData[0])
+                console.log(response)
+            })
+            .catch( error => {
+                console.log('erro '+ error)
+            });
         },
         randomReadings() {
           this.readings.push({
