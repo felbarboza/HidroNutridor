@@ -11,6 +11,7 @@ export default class CalibrateConductivityService {
     conductivity:number = 0;
     conductivity_right:number = 0
     pode_mandar_socket:number = 0
+    ws: WebSocket
 
     constructor() {
         if(CalibrateConductivityService._instance){
@@ -25,6 +26,12 @@ export default class CalibrateConductivityService {
     }
 
     public async calibrate(estufa_id: number, conductivity: number): Promise<void> {
+        const obj_retorno2 = {
+            "type": "adj",
+            "cmd": "on"
+        }
+        this.ws.send(JSON.stringify(obj_retorno2))
+        
         this.conductivity_right = conductivity
         
         const activatePumpRepository = getRepository(SensorData)
@@ -56,6 +63,7 @@ export default class CalibrateConductivityService {
 	}
 
     public async verifyECCalibration(ws: WebSocket): Promise<void> {
+        this.ws = ws
         if(this.pode_mandar_socket==1){
             this.coeficient = (this.conductivity_right/this.conductivity)
             
@@ -66,6 +74,11 @@ export default class CalibrateConductivityService {
     
             ws.send(JSON.stringify(obj_retorno))
             this.pode_mandar_socket=0
+            const obj_retorno2 = {
+                "type": "adj",
+                "cmd": "on"
+            }
+            this.ws.send(JSON.stringify(obj_retorno2))
             return;
         }
         else{

@@ -17,13 +17,14 @@ class SensorData {
 	ph: number;
 
 	@Column()
-	conductivity: number;
+	adc_ec: number;
 
 	@Column()
 	adc_ph: number;
 
 	@Column()
-	adc_ec: number;
+	conductivity: number;
+
 
   @Column()
   greenhouse_id: number;
