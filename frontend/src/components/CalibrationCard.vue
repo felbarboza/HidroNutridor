@@ -94,9 +94,9 @@ export default {
         },
         saveValue() {
             this.isEditing = false;
-            this.formValidity = false;
-            //this.$emit('proceed',true);
-            if(this.calibrationType === 'acidPh'){
+            //this.formValidity = false;
+            if(this.calibrationType === 'acidPH'){
+                this.$store.state.acidicPH = this.offset;
                 console.log(`Saving ${this.calibrationType} offset value: ${this.offset}`)       
                 this.$emit('loading',true);
                 APICalls.setLowPHCalibration(this.$store.state.currentGreenhouse, this.offset, this.$store.state.user.token)
@@ -109,7 +109,8 @@ export default {
                     console.log(error)
                 })
             }
-            if(this.calibrationType === 'basicPh'){
+            if(this.calibrationType === 'basicPH'){
+                this.$store.state.basicPH = this.offset;
                 console.log(`Saving ${this.calibrationType} offset value: ${this.offset}`)
                 this.$emit('loading',true);
                 APICalls.setHighPHCalibration(this.$store.state.currentGreenhouse, this.offset, this.$store.state.user.token)
@@ -123,6 +124,7 @@ export default {
                 })
             }   
             if(this.calibrationType === 'conductivity'){
+                this.$store.state.conductivity = this.offset;
                 console.log(`Saving ${this.calibrationType} offset value: ${this.offset}`)
                 this.$emit('loading',true);
                 APICalls.setConductivityCalibration(this.$store.state.currentGreenhouse, this.offset, this.$store.state.user.token)
@@ -133,7 +135,8 @@ export default {
                 .catch(error => {
                     console.log(error)
                 })
-            }        
+            }
+            this.$emit('proceed',true);        
         }
     }
 }
