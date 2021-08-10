@@ -14,13 +14,13 @@
         <Graph :readings="readings" readingType="conductivity" color="green" title="Condutividade" :key='refresh'/> 
       </v-col> -->
       <v-col>
-        <Graph2 :readings="readings" readingType="ph" color="cyan" title="pH" :range="range"/> 
+        <Graph2 :readings="readings" readingType="ph" color="cyan" title="pH" :range="range" :key="refreshGraph"/> 
       </v-col>
       <v-col>
-        <Graph2 :readings="readings" readingType="temperature" color="teal" title="Temperatura" :range="range"/> 
+        <Graph2 :readings="readings" readingType="temperature" color="teal" title="Temperatura" :range="range" :key="refreshGraph"/> 
       </v-col>
       <v-col>
-        <Graph2 :readings="readings" readingType="conductivity" color="green" title="Condutividade" :range="range"/> 
+        <Graph2 :readings="readings" readingType="conductivity" color="green" title="Condutividade" :range="range" :key="refreshGraph"/> 
       </v-col>
     </v-row>
     <v-row>
@@ -220,6 +220,7 @@ import Graph2 from '../components/Graph2.vue'
         greenhouseName: '',
         timerId: null,
         updateRate: 10,
+        refreshGraph:0,
         // greenHouseId: 1,
         editedIndex: -1,
         editedItem: {},
@@ -324,9 +325,11 @@ import Graph2 from '../components/Graph2.vue'
           this.$store.dispatch('setCurrentGreenhouse', this.select.id);
           this.getSensorData();
           this.refresh+=1;
-          // setTimeout(() => {
-          //   this.refresh+=1
-          // },3000)
+          setInterval(() => {
+            this.refresh+=1
+            this.refreshGraph+=1
+            this.readings = []
+          },120*1000)
         },
         startAutoUpdate() {
           this.timerId = setInterval(() => {

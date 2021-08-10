@@ -28,9 +28,10 @@ export default class CalibrateConductivityService {
     public async calibrate(estufa_id: number, conductivity: number): Promise<void> {
         const obj_retorno2 = {
             "type": "adj",
-            "cmd": "on"
+            "cmd": "off"
         }
         this.ws.send(JSON.stringify(obj_retorno2))
+        await new Promise(f => setTimeout(f, 10000));
         
         this.conductivity_right = conductivity
         
@@ -46,16 +47,25 @@ export default class CalibrateConductivityService {
                     order:{
                         created_at: "DESC"	
                     },
-                    take: 5
+                    take: 10
             });
-
-            const adc_ec_values = activatePumpHistory.map((sensorData)=>{
-                return Math.round(sensorData.adc_ec)
+            let biggerAdc = 0
+            let lowerAdc = 9999999
+            activatePumpHistory.forEach((sensorData)=>{
+                if(sensorData.adc_ec>biggerAdc){
+                    biggerAdc=sensorData.adc_ec;
+                }
+                if(sensorData.adc_ec<lowerAdc){
+                    lowerAdc=sensorData.adc_ec
+                }
             })
-
-            if(adc_ec_values.every( (val, i, arr) => val === arr[0] )){
-                this.conductivity = adc_ec_values[0]
+            if((biggerAdc-lowerAdc)<=50){
+                console.log(biggerAdc, lowerAdc)
+                this.conductivity = (Number(biggerAdc)+Number(lowerAdc))*(0.5)
+                console.log(this.conductivity)
                 estabilizou=true
+                console.log('estabilizou')
+                this.pode_mandar_socket=1
             }
             await new Promise(f => setTimeout(f, 1000));
         }
@@ -65,7 +75,10 @@ export default class CalibrateConductivityService {
     public async verifyECCalibration(ws: WebSocket): Promise<void> {
         this.ws = ws
         if(this.pode_mandar_socket==1){
-            this.coeficient = (this.conductivity_right/this.conductivity)
+            this.pode_mandar_socket=0
+            await new Promise(f => setTimeout(f, 10000));
+            console.log(this.conductivity_right, this.conductivity)
+            this.coeficient = Number(this.conductivity_right/this.conductivity)
             
             const obj_retorno = {
                 "type": "coef_ec",
@@ -73,7 +86,6 @@ export default class CalibrateConductivityService {
             }
     
             ws.send(JSON.stringify(obj_retorno))
-            this.pode_mandar_socket=0
             const obj_retorno2 = {
                 "type": "adj",
                 "cmd": "on"

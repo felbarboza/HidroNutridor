@@ -92,14 +92,14 @@ export default {
                 console.log(`Editing ${this.calibrationType} offset value: ${this.offset}`)
             }        
         },
-        saveValue() {
+        async saveValue() {
             this.isEditing = false;
             //this.formValidity = false;
             if(this.calibrationType === 'acidPH'){
                 this.$store.state.acidicPH = this.offset;
                 console.log(`Saving ${this.calibrationType} offset value: ${this.offset}`)       
                 this.$emit('loading',true);
-                APICalls.setLowPHCalibration(this.$store.state.currentGreenhouse, this.offset, this.$store.state.user.token)
+                await APICalls.setLowPHCalibration(this.$store.state.currentGreenhouse, this.offset, this.$store.state.user.token)
                 .then( response => {
                     console.log(response)
                     this.$store.state.acidicPH = this.offset;
@@ -113,7 +113,7 @@ export default {
                 this.$store.state.basicPH = this.offset;
                 console.log(`Saving ${this.calibrationType} offset value: ${this.offset}`)
                 this.$emit('loading',true);
-                APICalls.setHighPHCalibration(this.$store.state.currentGreenhouse, this.offset, this.$store.state.user.token)
+                await APICalls.setHighPHCalibration(this.$store.state.currentGreenhouse, this.offset, this.$store.state.user.token)
                 .then( response => {
                     console.log(response)
                     this.$store.state.basicPH = this.offset;
@@ -127,7 +127,7 @@ export default {
                 this.$store.state.conductivity = this.offset;
                 console.log(`Saving ${this.calibrationType} offset value: ${this.offset}`)
                 this.$emit('loading',true);
-                APICalls.setConductivityCalibration(this.$store.state.currentGreenhouse, this.offset, this.$store.state.user.token)
+                await APICalls.setConductivityCalibration(this.$store.state.currentGreenhouse, this.offset, this.$store.state.user.token)
                 .then( response => {
                     this.$store.state.conductivity = this.offset;
                     console.log(response)

@@ -14,13 +14,13 @@ class ManageActivationTimeService {
     status:string
 
     constructor(){
-        this.status="off"
+        this.status="on"
     }
 	public async execute(ws: WebSocket): Promise<void> {
         const now = new Date()
         const now_hour = now.getHours()
         const now_minute = now.getMinutes()
-
+        // console.log(now_hour, now_minute)
         const sensorDataRepository = getRepository(ActivationTime)
 
         const sensorData = await sensorDataRepository.findOne({
@@ -31,6 +31,7 @@ class ManageActivationTimeService {
                 minute_time_off: MoreThanOrEqual(now_minute)
             }
         });
+        // console.log(sensorData)
 
         if(!sensorData){
             const obj_retorno={

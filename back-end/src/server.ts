@@ -39,12 +39,12 @@ const calibratePh = CalibratePhService.getInstance()
 const calibrateConductivity = CalibrateConductivityService.getInstance()
 
 app.ws('/', (ws, req)=>{
-    ws.on('message', msg => {
+    ws.on('message', async msg => {
 			try{
 				const data = JSON.parse(msg.toString())
-				console.log(data)
+				// console.log(data)
 				saveSensorData.execute(data)
-				activatePump.execute(ws)
+				await activatePump.execute(ws)
 				calibratePh.verifyPhCalibration(ws)
 				calibrateConductivity.verifyECCalibration(ws)
 				}

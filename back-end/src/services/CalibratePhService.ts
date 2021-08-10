@@ -34,7 +34,7 @@ export default class CalibratePhService {
             "cmd": "off"
         }
         this.ws.send(JSON.stringify(obj_retorno))
-        await new Promise(f => setTimeout(f, 5000));
+        await new Promise(f => setTimeout(f, 10000));
         this.ph_low = ph
         console.log(ph)
         const activatePumpRepository = getRepository(SensorData)
@@ -50,7 +50,7 @@ export default class CalibratePhService {
                     order:{
                         created_at: "DESC"	
                     },
-                    take: 5
+                    take: 10
             });
 
             const adc_ph_values = activatePumpHistory.map((sensorData)=>{
@@ -87,7 +87,7 @@ export default class CalibratePhService {
                     order:{
                         created_at: "DESC"	
                     },
-                    take: 5
+                    take: 10
             });
 
             const adc_ph_values = activatePumpHistory.map((sensorData)=>{
@@ -109,9 +109,11 @@ export default class CalibratePhService {
     public async verifyPhCalibration(ws: WebSocket): Promise<void> {
         this.ws = ws
         if(this.pode_mandar_socket==1){
+            this.pode_mandar_socket=0
+            await new Promise(f => setTimeout(f, 20000));
             console.log(this.ph_low, this.ph_high, this.adc_ph_high, this.adc_ph_low)
             this.a = ((this.ph_high-this.ph_low)/(this.adc_ph_high-this.adc_ph_low))
-            this.b = (((-this.a)*this.adc_ph_low)+this.ph_low)
+            this.b = (Number(-1*this.a*this.adc_ph_low)+Number(this.ph_low))
             console.log(this.a, this.b)
             const obj_retorno = {
                 "type": "coef_ph",
@@ -120,7 +122,6 @@ export default class CalibratePhService {
             }
     
             ws.send(JSON.stringify(obj_retorno))
-            this.pode_mandar_socket=0
             const obj_retorno2 = {
                 "type": "adj",
                 "cmd": "on"
