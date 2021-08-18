@@ -27,12 +27,13 @@
                 height="200px"
                 ></v-card> -->
                 <CalibrationCard 
-                    label="Offset de pH ácido" 
+                    label="Valor de referência de pH ácido" 
                     title="Calibragem de pH: solução ácida" 
                     calibrationType="acidPH"
                     message="Insira o sensor de pH na solução ácida"
                     @proceed='proceed=true, loading=false'
-                    @loading='loading=true'
+                    @loading='processLoading'
+                    @success='emitSuccess'
                 />
                 <v-btn
                 :disabled='!proceed'
@@ -45,7 +46,7 @@
 
                 <v-btn 
                     text
-                    @click="$emit('cancel')"  
+                    @click="$emit('cancel'), loading=false"  
                 >
                 Cancelar
                 </v-btn>
@@ -58,12 +59,13 @@
                 height="200px"
                 ></v-card> -->
                 <CalibrationCard 
-                    label="Offset de pH básico" 
+                    label="Valor de referência de pH básico" 
                     title="Calibragem de pH: solução básica" 
                     calibrationType="basicPH"
                     message="Insira o sensor de pH na solução básica"
                     @proceed='proceed=true, loading=false'
-                    @loading='loading=true'
+                    @loading='processLoading'
+                    @success='emitSuccess'
                 />
                 <v-btn
                     :disabled='!proceed'
@@ -76,7 +78,7 @@
 
                 <v-btn 
                     text
-                    @click="$emit('cancel')"  
+                    @click="$emit('cancel'),loading=false"  
                 >
                 Cancelar
                 </v-btn>
@@ -101,6 +103,13 @@ export default {
         endCalibration() { 
             this.$emit('complete-calibration')
             this.step = 1;
+            this.proceed = false;
+        },
+        processLoading(value) {
+            this.loading = value;
+        },
+        emitSuccess(value) {
+            this.$emit('success',value);
         }
     }
 }

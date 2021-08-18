@@ -5,6 +5,7 @@
             <v-form
                 v-model="formValidity"
                 :disabled="!isEditing"
+                @submit.prevent='saveValue'
             >   
                 <template>
                     <v-row>
@@ -35,6 +36,7 @@
                         :disabled="!formValidity"
                         text 
                         @click="saveValue()"
+                        :loading='loading'
                     >
                     Salvar
                     </v-btn>
@@ -70,6 +72,7 @@ export default {
     data() {
         return {
             offset: 0,
+            loading: false,
             formValidity: false,
             dialog: false,
             isEditing: false,
@@ -103,10 +106,14 @@ export default {
                 .then( response => {
                     console.log(response)
                     this.$store.state.acidicPH = this.offset;
+                    console.log('proceeding acid');
                     this.$emit('proceed',true);
+                    this.$emit('loading',false);
                 })
                 .catch(error => {
                     console.log(error)
+                    this.$emit('loading',false);
+                    this.$emit('success',false);
                 })
             }
             if(this.calibrationType === 'basicPH'){
@@ -118,25 +125,31 @@ export default {
                     console.log(response)
                     this.$store.state.basicPH = this.offset;
                     this.$emit('proceed',true);
+                    this.$emit('loading',false);
                 })
                 .catch(error => {
                     console.log(error)
+                    this.$emit('loading',false);
+                    this.$emit('success',false);
                 })
             }   
             if(this.calibrationType === 'conductivity'){
                 this.$store.state.conductivity = this.offset;
                 console.log(`Saving ${this.calibrationType} offset value: ${this.offset}`)
-                this.$emit('loading',true);
+                this.loading = true;
                 await APICalls.setConductivityCalibration(this.$store.state.currentGreenhouse, this.offset, this.$store.state.user.token)
                 .then( response => {
                     this.$store.state.conductivity = this.offset;
                     console.log(response)
+                    this.loading = false;
+                    this.$emit('success',true);
                 })
                 .catch(error => {
                     console.log(error)
+                    this.loading = false;
+                    this.$emit('success',false);
                 })
-            }
-            this.$emit('proceed',true);        
+            }       
         }
     }
 }

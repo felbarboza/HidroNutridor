@@ -17,6 +17,7 @@
           prepend-icon="mdi-lock"
           :append-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
           @click:append="showPassword = !showPassword"
+          @keydown.enter="login"
           v-model="password"
           :rules="nameRules" required/>
         <!-- <router-link to="/signup">

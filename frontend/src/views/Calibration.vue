@@ -17,10 +17,11 @@
           <v-row>
               <v-col cols="12"> 
                 <CalibrationCard 
-                    label="Offset de condutividade" 
+                    label="Valor de referência de condutividade" 
                     title="Calibragem de condutividade" 
                     calibrationType="conductivity"
                     message="Insira o sensor de condutividade na solução"
+                    @success="printMessage"
                 />
               </v-col>
           </v-row>
@@ -198,26 +199,26 @@
                 <CalibrationSteps
                     @complete-calibration='calibrationComplete'
                     @cancel='dialog=false'
+                    @success='printMessage'
                 />
             </v-dialog>
       </v-container>
       <v-snackbar
-        v-model="invalidTime"
-        color="red accent-4"
+        v-model="showMessage"
+        :color="color + 'accent-4'"
         >
-        {{ errorMessage }}
-
-        <template v-slot:action="{ attrs }">
-            <v-btn
-            color="white"
-            text
-            v-bind="attrs"
-            @click="invalidTime = false"
-            >
-            Fechar
-            </v-btn>
-        </template>
-    </v-snackbar>
+        {{ message }}
+            <template v-slot:action="{ attrs }">
+                <v-btn
+                color="white"
+                text
+                v-bind="attrs"
+                @click="showMessage = false"
+                >
+                Fechar
+                </v-btn>
+            </template>
+        </v-snackbar>
   </div>
 </template>
 
@@ -232,17 +233,18 @@ export default {
     data() {
         return {
             activationTime: null,
+            color: 'gray',
             deActivationTime: null,
             menu1: false,
             menu2: false,
             reading: {},
             isEditingTime: false,
             formValidity: false,
-            invalidTime: false,
+            showMessage: false,
             activationTimes:[],
             items:[],
             dialog: false,
-            errorMessage:'',
+            message:'',
             refresh: 0,
             refreshPH: 0,
             activationRules:[
@@ -319,13 +321,14 @@ export default {
                     || (this.activationTime>timeOn && this.activationTime<timeOff)
                     || (this.deActivationTime>timeOn && this.deActivationTime<timeOff))
                 {
-                    this.invalidTime = true;
-                    this.errorMessage = 'Erro: conflito de horários'
-                    console.log(this.errorMessage)
+                    this.message = 'Erro: conflito de horários'
+                    this.color = "red "
+                    this.showMessage = true;
+                    console.log(this.message)
                     break;
                 }
             }
-            if(!this.invalidTime) {
+            if(!this.showMessage) {
                 let hourOn =  parseInt(this.activationTime.substring(0,2))
                 let minuteOn = parseInt(this.activationTime.substring(3,5))
                 let hourOff = parseInt(this.deActivationTime.substring(0,2))
@@ -348,7 +351,7 @@ export default {
         getActivationTimes() {
             APICalls.getActivationTimes( this.$store.state.currentGreenhouse, this.$store.state.user.token)
             .then(response =>{ 
-                console.log(response.data)
+               // console.log(response.data)
                 this.activationTimes = response.data.activationsTime
                 this.refresh+=1})
             .catch(error => 
@@ -363,7 +366,11 @@ export default {
         calibrationComplete() {
             this.dialog=false
             this.refreshPH+=1
-            console.log("ph ácido " + this.$store.state.acidicPH)
+            console.log("ph ácido " + this.$store.state.acidicPH) 
+            this.message = 'Calibração Concluída'
+            this.color = "green "
+            this.showMessage = true;
+            console.log(this.message)
         },
         getLiveSensorData() {
             APICalls.getSensorData(this.$store.state.currentGreenhouse,1,this.$store.state.user.token)
@@ -378,7 +385,7 @@ export default {
                 } else {
                     this.reading = response.data.sensorData[0]
                 }     
-                console.log(response)
+                //console.log(response)
             })
             .catch( error => {
                 console.log('erro '+ error)
@@ -388,6 +395,16 @@ export default {
                         conductivity: '-',
                     }
             });
+        },
+        printMessage(value) {
+            if(value) {
+                this.message = 'Calibração Concluída'
+                this.color = "green "
+                this.showMessage = true;
+            }
+            this.message = 'Erro ao Calibrar'
+            this.color = "red "
+            this.showMessage = true;
         },
     }
 }
